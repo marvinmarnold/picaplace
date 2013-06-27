@@ -7,10 +7,11 @@ import java.io.InputStreamReader;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 import android.app.Activity;
-import android.net.http.AndroidHttpClient;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -22,12 +23,13 @@ public class InstagramGet extends Activity {
 	}
 
 	public static String getPictureStream() {
-
+		
+		Log.d("Instagram", "Getting picture started");
 		StringBuilder builder = new StringBuilder("");
-		AndroidHttpClient client = AndroidHttpClient.newInstance(
-				"PicAPlace");
+		HttpClient client = new DefaultHttpClient();
 		HttpGet httpGet = new HttpGet(
-				"https://api.instagram.com/v1/media/search?client_id='f83232561f2842a5badc2da920518b9c'");
+				"https://api.instagram.com/v1/media/popular?client_id=eaab0a729f20412b922747020fb4798a");
+
 		try {
 			HttpResponse response = client.execute(httpGet);
 			StatusLine statusLine = response.getStatusLine();
@@ -41,13 +43,13 @@ public class InstagramGet extends Activity {
 				while ((line = reader.readLine()) != null) {
 					builder.append(line);
 				}
+				Log.d("Instagram", builder.toString());
 			} else {
-				Log.d("TEST", "Failed to download file");
+				Log.e("TEST", "Failed to download file");
 			}
 		} catch (Exception a) {
-			Log.d("Instagram error", a.toString());
+			Log.d("Instagram", a.toString());
 		}
-		Log.d("Instagram", builder.toString());
 
 		return builder.toString();
 	}
