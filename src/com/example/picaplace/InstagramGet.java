@@ -7,21 +7,27 @@ import java.io.InputStreamReader;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
 
 import android.app.Activity;
+import android.net.http.AndroidHttpClient;
+import android.os.Bundle;
 import android.util.Log;
 
 public class InstagramGet extends Activity {
 
-	public String getPictureStream() {
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.instagram);
+	}
+
+	public static String getPictureStream() {
 
 		StringBuilder builder = new StringBuilder("");
-		HttpClient client = new DefaultHttpClient();
+		AndroidHttpClient client = AndroidHttpClient.newInstance(
+				"PicAPlace");
 		HttpGet httpGet = new HttpGet(
-				"https://api.instagram.com/v1/media/search");
+				"https://api.instagram.com/v1/media/search?client_id='f83232561f2842a5badc2da920518b9c'");
 		try {
 			HttpResponse response = client.execute(httpGet);
 			StatusLine statusLine = response.getStatusLine();
@@ -39,9 +45,10 @@ public class InstagramGet extends Activity {
 				Log.d("TEST", "Failed to download file");
 			}
 		} catch (Exception a) {
-			System.err.println("ERROR Instagram Get");
+			Log.d("Instagram error", a.toString());
 		}
-		System.out.println(builder.toString());
+		Log.d("Instagram", builder.toString());
+
 		return builder.toString();
 	}
 }
