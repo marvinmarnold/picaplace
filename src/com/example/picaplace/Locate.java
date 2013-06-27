@@ -17,9 +17,11 @@ public class Locate extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.testinggps);
-//		location = manager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-//		TextView view = (TextView) findViewById(R.id.Coords);
-//		view.setText(location.getLongitude() + ", " + location.getLatitude());
+		// location =
+		// manager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+		// TextView view = (TextView) findViewById(R.id.Coords);
+		// view.setText(location.getLongitude() + ", " +
+		// location.getLatitude());
 	}
 
 	// starts the process getting the location of the users
@@ -35,7 +37,7 @@ public class Locate extends Activity {
 			private void makeUseOfNewLocation(Location location) {
 				if (isBetterLocation(location, Locate.location))
 					Locate.setLocation(location);
-					Log.d("Test", "Location set");
+				Log.d("Test", "Location set");
 			}
 
 			private boolean isBetterLocation(Location location,
