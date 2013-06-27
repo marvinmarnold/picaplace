@@ -10,13 +10,9 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.JsonReader;
 import android.util.Log;
 
 public class InstagramGet extends Activity {

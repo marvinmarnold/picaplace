@@ -17,7 +17,6 @@ public class MainActivity extends Activity {
 		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
 				.permitAll().build();
 		StrictMode.setThreadPolicy(policy);
-
 		Log.d("MainActivity", "Changed policy");
 		String json = InstagramGet.getPictureStream();
 		Log.d("Instagram", "Instagram Done");
