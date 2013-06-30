@@ -1,15 +1,21 @@
 package com.example.picaplace;
 
+import java.net.URL;
+
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
-import android.widget.TextView;
+import android.widget.GridLayout;
+import android.widget.ImageView;
 
 public class Locate extends Activity implements LocationListener {
 	private LocationManager manager;
@@ -18,24 +24,77 @@ public class Locate extends Activity implements LocationListener {
 	private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10; // 10 meters
 	private static final int TWO_MINUTES = 1000 * 60 * 2;
 	// The minimum time between updates in milliseconds
-	private static final long MIN_TIME_BW_UPDATES = 1000 * 10 * 1; // 1 minute
+	private static final long MIN_TIME_BW_UPDATES = 1000 * 60 * 1; // 1 minute
 	boolean canGetLocation = false;
-	private TextView view;
+
+	// private TextView view;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.testinggps);
+		setContentView(R.layout.instagram);
 		manager = (LocationManager) this
 				.getSystemService(Context.LOCATION_SERVICE);
 		getLocation();
-		view = (TextView) findViewById(R.id.Coords);
-		Button b = (Button) findViewById(R.id.refresh);
-		b.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View arg0) {
-				getLocation();
+		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
+				.permitAll().build();
+		StrictMode.setThreadPolicy(policy);
+		String json;
+		Log.d("PicABug", "Here");
+
+		if (location != null) {
+			json = InstagramGet.getJson(location.getLatitude(),
+					location.getLongitude()); // Add lat + long here
+		} else {
+			Log.d("PicABug", "Loc Is Null");
+			json = InstagramGet.getJson();
+		}
+
+		// Load image by url
+		GridLayout rel = (GridLayout) findViewById(R.id.grid);
+		Log.d("PicAGrid", "Grid Layout");
+		try {
+			String[] pics = InstagramGet.getImageUrl(json);
+			Log.d("PicAGrid", "Pics ");
+			for (int i = 0; i < pics.length; i++) {
+				Log.d("PicAGrid", "Loop " + i);
+				ImageView mciv = new ImageView(this);
+				Log.d("PicAGrid", "new Imageview");
+				mciv.setId(i + 10);
+				Log.d("PicAGrid", "set id");
+				LayoutParams p = new LayoutParams(LayoutParams.WRAP_CONTENT,
+						LayoutParams.WRAP_CONTENT);
+				Log.d("PicAGrid", "Loading params");
+				mciv.setLayoutParams(p);
+				Log.d("PicAGrid", "Set Params");
+				URL thumb_u = new URL(InstagramGet.getImageUrl(json)[i]);
+				Log.d("PicAGrid", "New URL");
+				Drawable thumb_d = Drawable.createFromStream(
+						thumb_u.openStream(), "src");
+				Log.d("PicAGrid", "Drawable Thumb");
+				mciv.setImageDrawable(thumb_d);
+				Log.d("PicAGrid", "Setting drawable");
+				rel.addView(mciv, 230, 200);
+				Log.d("PicAGrid", "Adding to view");
 			}
-		});
+			Button ref = new Button(this);
+			Log.d("PicAGrid", "new Button");
+			ref.setText("Refresh");
+			Log.d("PicAGrid", "Refreshing");
+			ref.setId(9999);
+			Log.d("PicAGrid", "setting id");
+			ref.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View arg0) {
+					getLocation();
+				}
+			});
+			Log.d("PicAGrid", "Listener");
+			rel.addView(ref);
+			Log.d("PicAGrid", "Adding view");
+		} catch (Exception e) {
+			e.printStackTrace();
+			Log.e("PicAGrid", "Images crashed " + e.toString());
+		}
 	}
 
 	// starts the process getting the location of the users
@@ -53,7 +112,7 @@ public class Locate extends Activity implements LocationListener {
 	public void getLocation() {
 		try {
 			manager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
-
+			//
 			// getting GPS status
 			boolean isGPSEnabled = manager
 					.isProviderEnabled(LocationManager.GPS_PROVIDER);
@@ -64,10 +123,10 @@ public class Locate extends Activity implements LocationListener {
 
 			if (!isGPSEnabled && !isNetworkEnabled) {
 				// no network provider is enabled
-				
+
 			} else {
-				this.canGetLocation = true;
 				if (isNetworkEnabled) {
+					Log.d("PicABug", "Network Enabled");
 					manager.requestLocationUpdates(
 							LocationManager.NETWORK_PROVIDER,
 							MIN_TIME_BW_UPDATES,
@@ -75,6 +134,7 @@ public class Locate extends Activity implements LocationListener {
 				}
 				// if GPS Enabled get lat/long using GPS Services
 				if (isGPSEnabled) {
+					Log.d("PicABug", "GPS Enabled");
 					manager.requestLocationUpdates(
 							LocationManager.GPS_PROVIDER, MIN_TIME_BW_UPDATES,
 							MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
@@ -166,13 +226,14 @@ public class Locate extends Activity implements LocationListener {
 	public void onLocationChanged(Location loc) {
 		if (isBetterLocation(loc, location))
 			location = loc;
-		if (location != null) {
-			view.setText(location.getLongitude() + ", "
-					+ location.getLatitude());
-			Log.d("GPS", "Location is: " + location);
-		}
-		if (location == null)
-			view.setText("Location is null");
+		Log.d("PicABug", "changed location");
+		// if (location != null) {
+		// view.setText(location.getLongitude() + ", "
+		// + location.getLatitude());
+		// Log.d("GPS", "Location is: " + location);
+		// }
+		// if (location == null)
+		// view.setText("Location is null");
 		stopLocationUpdates();
 	}
 

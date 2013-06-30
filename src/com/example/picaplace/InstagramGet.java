@@ -23,9 +23,8 @@ public class InstagramGet extends Activity {
 		setContentView(R.layout.instagram);
 	}
 
-	public static String getPictureStream() {
-
-		Log.d("PicAInstagram", "Getting picture started");
+	public static String getJson() {
+		Log.d("PicAInstagram", "Json Without params");
 		StringBuilder builder = new StringBuilder("");
 		HttpClient client = new DefaultHttpClient();
 		HttpGet httpGet = new HttpGet(
@@ -55,18 +54,15 @@ public class InstagramGet extends Activity {
 		return builder.toString();
 	}
 
-	public static String getPictureStream(double lat, double lng) {
-
-		Log.d("PicAInstagram", "Getting picture started");
+	public static String getJson(double lat, double lng) {
+		Log.d("PicAInstagram", "Json With params");
 		StringBuilder builder = new StringBuilder("");
 		HttpClient client = new DefaultHttpClient();
-		HttpGet httpGet = new HttpGet(
-				"https://api.instagram.com/v1/media/search?lat="
-						+ lat
-						+ "&lng="
-						+ lng
-						+ "&distance=1000&client_id=eaab0a729f20412b922747020fb4798a");
-
+		String http = "https://api.instagram.com/v1/media/search?lat=\"" + lat
+				+ "\"&lng=\"" + lng
+				+ "\"&distance=1000&client_id=eaab0a729f20412b922747020fb4798a";
+		Log.d("PicABUG", http);
+		HttpGet httpGet = new HttpGet(http);
 		try {
 			HttpResponse response = client.execute(httpGet);
 			StatusLine statusLine = response.getStatusLine();
@@ -91,63 +87,6 @@ public class InstagramGet extends Activity {
 		return builder.toString();
 	}
 
-	// This method get all sub JSonObjects in a json string and returns the
-	// value the most inner one.
-	// String
-	public static String parseJsonString(String json, String[] values) {
-		String value = null;
-		try {
-			// Log.d("PicAJSON", json);
-			JSONObject jsonObj = new JSONObject(json);
-			// Log.d("PicAJSON", jsonObj.toString());
-			for (int i = 0; i < values.length - 1; i++) {
-				jsonObj = jsonObj.getJSONObject(values[i]);
-				// Log.d("PicAJSON", jsonObj.toString());
-			}
-			value = jsonObj.getString(values[values.length - 1]);
-			// Log.d("Val", value + "");
-		} catch (Exception e) {
-			e.printStackTrace();
-			// Log.d("PicAJSON", "ParseCrashed");
-
-		}
-		return value;
-	}
-
-	public static int parseJsonInt(String json, String[] values) {
-		int value = 0;
-		try {
-			Log.d("PicAJSON", json);
-			JSONObject jsonObj = new JSONObject(json);
-			Log.d("PicAJSON", jsonObj.toString());
-			for (int i = 0; i < values.length - 1; i++) {
-				jsonObj = jsonObj.getJSONObject(values[i]);
-				Log.d("PicAJSON", jsonObj.toString());
-			}
-			value = jsonObj.getInt(values[values.length - 1]);
-			Log.d("PicAJSON", value + "");
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			Log.d("PicAJSON", "ParseCrashed");
-		}
-		return value;
-	}
-
-	public static double parseJsonDouble(String json, String[] values) {
-		double value = 0;
-		try {
-			JSONObject jsonObj = new JSONObject(json);
-			for (int i = 0; i < values.length - 1; i++) {
-				jsonObj = jsonObj.getJSONObject(values[i]);
-			}
-			value = jsonObj.getDouble(values[values.length - 1]);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return value;
-	}
-
 	// Range between 0 to 15 inclusive.
 	public static String getNumberOfLikes(String json, int start, int end) {
 		String value = "";
@@ -167,14 +106,17 @@ public class InstagramGet extends Activity {
 		return value;
 	}
 
-	public static String getImageUrl(String json) {
-		String value = "";
+	public static String[] getImageUrl(String json) {
+		String[] value = new String[15];
 		Log.d("PicAJSON", "Likes started");
 		try {
 			JSONObject jsonObject = new JSONObject(json);
-			JSONObject cur = jsonObject.getJSONArray("data").getJSONObject(0)
-					.getJSONObject("images").getJSONObject("thumbnail");
-			value = cur.getString("url");
+			JSONObject cur;
+			for (int i = 0; i < 15; i++) {
+				cur = jsonObject.getJSONArray("data").getJSONObject(i)
+						.getJSONObject("images").getJSONObject("thumbnail");
+				value[i] = cur.getString("url");
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			Log.e("PicAJSON", "Likes Catched");
