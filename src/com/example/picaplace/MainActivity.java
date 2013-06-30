@@ -1,6 +1,5 @@
 package com.example.picaplace;
 
-import java.io.InputStream;
 import java.net.URL;
 
 import android.app.Activity;
@@ -24,7 +23,7 @@ public class MainActivity extends Activity {
 		StrictMode.setThreadPolicy(policy);
 		Log.d("MainActivity", "Changed policy");
 		String json = InstagramGet.getPictureStream();
-
+		// Load image by url
 		try {
 			ImageView myImageView = (ImageView) findViewById(R.id.image);
 			URL thumb_u = new URL(InstagramGet.getImageUrl(json));
@@ -32,10 +31,9 @@ public class MainActivity extends Activity {
 					"src");
 			myImageView.setImageDrawable(thumb_d);
 		} catch (Exception e) {
-			// handle it
+			e.printStackTrace();
 		}
-
-		// String[] valuesArr = { "data", "images", "thumbnail", "url" };
+		// Ended load by url
 		Log.d("Instagram", "Instagram Done");
 		String code = InstagramGet.getNumberOfLikes(json, 0, 15);
 		TextView myTextView = (TextView) findViewById(R.id.main_text);
@@ -51,16 +49,4 @@ public class MainActivity extends Activity {
 
 	// Image setting
 
-	private Drawable LoadImageFromWebOperations(String url) {
-
-		try {
-			InputStream is = (InputStream) new URL(url).getContent();
-			Drawable d = Drawable.createFromStream(is, "src name");
-			return d;
-		} catch (Exception e) {
-			System.out.println("Exc=" + e);
-			return null;
-		}
-
-	}
 }
