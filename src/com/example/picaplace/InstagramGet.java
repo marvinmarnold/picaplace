@@ -11,7 +11,6 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
@@ -62,7 +61,6 @@ public class InstagramGet extends Activity {
 		} catch (Exception a) {
 			Log.d("PicAInstagram", a.toString());
 		}
-
 		return builder.toString();
 	}
 
@@ -133,20 +131,6 @@ public class InstagramGet extends Activity {
 		return value;
 	}
 
-	public static void testJson(String json) {
-		JSONObject jsonObject;
-		try {
-			jsonObject = new JSONObject(json);
-			JSONArray jsonArr = jsonObject.getJSONArray("data");
-			for (int i = 0; i < jsonArr.length(); i++) {
-				Log.d("PicAJson", jsonArr.get(i).toString());
-			}
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
 	public static String[] getImageUrl(String json) {
 		String[] value = new String[0];
 		Log.d("PicAJSON", "URL started");
@@ -158,7 +142,7 @@ public class InstagramGet extends Activity {
 			int i = 0;
 			for (; i < jsonArr.length(); i++) {
 				cur = jsonArr.getJSONObject(i).getJSONObject("images")
-						.getJSONObject("low_resolution");
+						.getJSONObject("thumbnail");
 				value[i] = cur.getString("url");
 			}
 		} catch (Exception e) {

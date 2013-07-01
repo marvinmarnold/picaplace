@@ -34,13 +34,18 @@ public class Locate extends Activity implements LocationListener {
 		setContentView(R.layout.instagram);
 		manager = (LocationManager) this
 				.getSystemService(Context.LOCATION_SERVICE);
-		getLocation();
+
 		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
 				.permitAll().build();
 		StrictMode.setThreadPolicy(policy);
+		layoutUpdate();
+		Log.i("PicAMain", "Program ended");
+	}
+
+	public void layoutUpdate() {
 		String json;
 		try {
-			Thread.sleep(1000);
+			Thread.sleep(2000);
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
@@ -49,13 +54,12 @@ public class Locate extends Activity implements LocationListener {
 					location.getLongitude()); // Add lat + long here
 		} else {
 			Log.d("PicABug", "Loc Is Null");
-			json = InstagramGet.getJson();
+			json = "";
+			// json = InstagramGet.getJson();
 		}
-		Log.d("PicAJson", json);
-		InstagramGet.testJson(json);
 		// Load image by url
 		GridLayout rel = (GridLayout) findViewById(R.id.grid);
-		Log.d("PicAGrid", "Grid Layout");
+		rel.removeAllViews();
 		try {
 			String[] pics = InstagramGet.getImageUrl(json);
 			Log.d("PicAGrid", "Pics ");
@@ -77,7 +81,7 @@ public class Locate extends Activity implements LocationListener {
 				// Log.d("PicAGrid", "Drawable Thumb");
 				mciv.setImageDrawable(thumb_d);
 				// Log.d("PicAGrid", "Setting drawable");
-				rel.addView(mciv, 230 / 4 * 3, 250);
+				rel.addView(mciv, 230 / 4 * 3, 200);
 				// Log.d("PicAGrid", "Adding to view");
 			}
 			rel.addView(new ImageView(this));
@@ -91,6 +95,7 @@ public class Locate extends Activity implements LocationListener {
 				@Override
 				public void onClick(View arg0) {
 					getLocation();
+					layoutUpdate();
 				}
 			});
 			// Log.d("PicAGrid", "Listener");
@@ -100,8 +105,6 @@ public class Locate extends Activity implements LocationListener {
 			e.printStackTrace();
 			Log.e("PicAGrid", "Images crashed " + e.toString());
 		}
-
-		Log.i("PicAMain", "Program ended");
 	}
 
 	// starts the process getting the location of the users
@@ -116,8 +119,21 @@ public class Locate extends Activity implements LocationListener {
 		manager.removeUpdates(this);
 	}
 
+	/*
+	 * public static int binarySearchPosition(ArrayList<String> urls,
+	 * ArrayList<Integer> locations, int dist) { int start = 0; int end =
+	 * urls.size() - 1; while (start != end) {
+	 * 
+	 * }
+	 * 
+	 * return start;
+	 * 
+	 * }
+	 */
+
 	public void getLocation() {
 		try {
+			Log.d("PicABug", "Here");
 			manager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
 			//
 			// getting GPS status
@@ -235,7 +251,10 @@ public class Locate extends Activity implements LocationListener {
 	public void onLocationChanged(Location loc) {
 		if (isBetterLocation(loc, location))
 			location = loc;
-		Log.d("PicABug", "changed location");
+		Log.d("PicABug",
+				"changed location " + loc.getLatitude() + ", "
+						+ loc.getLongitude());
+
 		// if (location != null) {
 		// view.setText(location.getLongitude() + ", "
 		// + location.getLatitude());
