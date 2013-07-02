@@ -3,7 +3,10 @@ package com.example.picaplace;
 import java.net.URL;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationListener;
@@ -11,6 +14,7 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
@@ -26,6 +30,9 @@ public class Locate extends Activity implements LocationListener {
 	// The minimum time between updates in milliseconds
 	private static final long MIN_TIME_BW_UPDATES = 1000 * 60 * 1; // 1 minute
 	boolean canGetLocation = false;
+	private int start;
+	private int end;
+	private String json;
 
 	// private TextView view;
 
@@ -34,76 +41,102 @@ public class Locate extends Activity implements LocationListener {
 		setContentView(R.layout.instagram);
 		manager = (LocationManager) this
 				.getSystemService(Context.LOCATION_SERVICE);
-
 		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
 				.permitAll().build();
 		StrictMode.setThreadPolicy(policy);
-		layoutUpdate();
-		Log.i("PicAMain", "Program ended");
-	}
-
-	public void layoutUpdate() {
-		String json;
+		start = 0;
+		end = 4;
+		Button ref1 = (Button) findViewById(R.id.refButton);
+		// Log.d("PicAGrid", "new Button");
+		ref1.setText("Reset");
+		// Log.d("PicAGrid", "Refreshing");
+		// Log.d("PicAGrid", "setting id");
+		ref1.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View arg0) {
+				getLocation();
+				layoutUpdate(true);
+			}
+		});
+		Button next = (Button) findViewById(R.id.nextButton);
+		// Log.d("PicAGrid", "new Button");
+		next.setText("next");
+		// Log.d("PicAGrid", "Refreshing");
+		// Log.d("PicAGrid", "setting id");
+		next.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View arg0) {
+				getLocation();
+				layoutUpdate(false);
+			}
+		});
+		// Log.d("PicAGrid", "Listener");
+		// Log.d("PicAGrid", "Here");
 		try {
 			Thread.sleep(2000);
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
+		layoutUpdate(true);
+		Log.i("PicAMain", "Program ended");
+
+	}
+
+	public void layoutUpdate(boolean ref) {
+		getLocation();
+
 		if (location != null) {
 			json = InstagramGet.getJson(location.getLatitude(),
 					location.getLongitude()); // Add lat + long here
 		} else {
 			Log.d("PicABug", "Loc Is Null");
-			json = "";
 			// json = InstagramGet.getJson();
 		}
 		// Load image by url
 		GridLayout rel = (GridLayout) findViewById(R.id.grid);
 		rel.removeAllViews();
-		try {
-			String[] pics = InstagramGet.getImageUrl(json);
-			Log.d("PicAGrid", "Pics ");
-			for (int i = 0; i < pics.length; i++) {
-				Log.d("PicAGrid", "Loop " + i);
-				ImageView mciv = new ImageView(this);
-				// Log.d("PicAGrid", "new Imageview");
-				mciv.setId(i + 10);
-				// Log.d("PicAGrid", "set id");
-				LayoutParams p = new LayoutParams(LayoutParams.WRAP_CONTENT,
-						LayoutParams.WRAP_CONTENT);
-				// Log.d("PicAGrid", "Loading params");
-				mciv.setLayoutParams(p);
-				// Log.d("PicAGrid", "Set Params");
-				URL thumb_u = new URL(pics[i]);
-				// Log.d("PicAGrid", "New URL");
-				Drawable thumb_d = Drawable.createFromStream(
-						thumb_u.openStream(), "src");
-				// Log.d("PicAGrid", "Drawable Thumb");
-				mciv.setImageDrawable(thumb_d);
-				// Log.d("PicAGrid", "Setting drawable");
-				rel.addView(mciv, 230 / 4 * 3, 200);
-				// Log.d("PicAGrid", "Adding to view");
-			}
-			rel.addView(new ImageView(this));
-			Button ref = new Button(this);
-			// Log.d("PicAGrid", "new Button");
-			ref.setText("Refresh");
-			// Log.d("PicAGrid", "Refreshing");
-			ref.setId(9999);
-			// Log.d("PicAGrid", "setting id");
-			ref.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View arg0) {
-					getLocation();
-					layoutUpdate();
+
+		if (json != null) {
+			try {
+				String[] pics = InstagramGet.getImageUrl(json);
+				Log.d("PicAGrid", "Pics ");
+				if (start >= pics.length || ref) {
+					start = 0;
+					end = 4;
+				} else {
+					end += 4;
 				}
-			});
-			// Log.d("PicAGrid", "Listener");
-			rel.addView(ref);
-			// Log.d("PicAGrid", "Adding view");
-		} catch (Exception e) {
-			e.printStackTrace();
-			Log.e("PicAGrid", "Images crashed " + e.toString());
+				for (; start < pics.length && start < end; start++) {
+					Log.d("PicAGrid", "Loop " + start);
+					ImageView mciv = new ImageView(this);
+					// Log.d("PicAGrid", "new Imageview");
+					mciv.setId(start + 10);
+					// Log.d("PicAGrid", "set id");
+					LayoutParams p = new LayoutParams(
+							LayoutParams.WRAP_CONTENT,
+							LayoutParams.WRAP_CONTENT);
+					// Log.d("PicAGrid", "Loading params");
+					mciv.setLayoutParams(p);
+					// Log.d("PicAGrid", "Set Params");
+					URL thumb_u = new URL(pics[start]);
+					// Log.d("PicAGrid", "New URL");
+					Drawable thumb_d = Drawable.createFromStream(
+							thumb_u.openStream(), "src");
+					// Log.d("PicAGrid", "Drawable Thumb");
+					mciv.setImageDrawable(thumb_d);
+					// Log.d("PicAGrid", "Setting drawable");
+					rel.addView(mciv, 230 / 2 * 3, 400);
+					// Log.d("PicAGrid", "Adding to view");
+				}
+				// int diff = end - start - 1;
+				// for (; diff > 0; diff--) {
+				// rel.addView(new View(this));
+				// }
+				// Log.d("PicAGrid", "Adding view");
+			} catch (Exception e) {
+				e.printStackTrace();
+				Log.e("PicAGrid", "Images crashed " + e.toString());
+			}
 		}
 	}
 
@@ -278,5 +311,23 @@ public class Locate extends Activity implements LocationListener {
 	@Override
 	public void onStatusChanged(String arg0, int arg1, Bundle arg2) {
 
+	}
+
+	public Dialog onCreateDialog(Bundle savedInstanceState) {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		// Get the layout inflater
+		LayoutInflater inflater = getLayoutInflater();
+		// Inflate and set the layout for the dialog
+		// Pass null as the parent view because its going in the dialog layout
+		builder.setView(inflater.inflate(R.layout.full_screen_image, null))
+		// Add action buttons
+				.setPositiveButton(R.string.dialogButton,
+						new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int id) {
+								dialog.dismiss();
+							}
+						});
+		return builder.create();
 	}
 }
