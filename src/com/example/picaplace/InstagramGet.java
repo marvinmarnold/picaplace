@@ -72,10 +72,6 @@ public class InstagramGet extends Activity {
 		String http = "https://api.instagram.com/v1/media/search?lat=" + lat
 				+ "&lng=" + lng + "&distance=" + DISTANCE
 				+ "&client_id=eaab0a729f20412b922747020fb4798a";
-
-		// String http = "https://api.instagram.com/v1/media/search?lat=" + lat
-		// + "&lng=" + lng + "&distance=" + DISTANCE;
-
 		Log.d("PicABUG", http);
 		HttpGet httpGet = new HttpGet(http);
 		try {
@@ -89,7 +85,7 @@ public class InstagramGet extends Activity {
 				response = client.execute(httpGet);
 				statusLine = response.getStatusLine();
 				statusCode = statusLine.getStatusCode();
-				Log.d("PicAJson", "Looping to get");
+				Log.d("PicAJson", "Looping to get JSON");
 			}
 			if (statusCode == 200) {
 				HttpEntity entity = response.getEntity();
@@ -102,7 +98,7 @@ public class InstagramGet extends Activity {
 				}
 				Log.d("PicAInstagram", builder.toString());
 			} else {
-				Log.e("PicAInstagram", "Failed to download file");
+				Log.e("PicAInstagram", "Failed to download JSON");
 			}
 		} catch (Exception a) {
 			Log.d("PicAInstagram", a.toString());
@@ -145,6 +141,22 @@ public class InstagramGet extends Activity {
 						.getJSONObject("thumbnail");
 				value[i] = cur.getString("url");
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			Log.e("PicAJSON", "Url Catched");
+		}
+		return value;
+	}
+
+	public static String getImageUrl(String json, int i) {
+		String value = null;
+		Log.d("PicAJSON", "URL started");
+		try {
+			JSONObject jsonObject = new JSONObject(json);
+			JSONArray jsonArr = jsonObject.getJSONArray("data");
+			JSONObject cur = jsonArr.getJSONObject(i).getJSONObject("images")
+					.getJSONObject("thumbnail");
+			value = cur.getString("url");
 		} catch (Exception e) {
 			e.printStackTrace();
 			Log.e("PicAJSON", "Url Catched");

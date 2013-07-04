@@ -1,21 +1,25 @@
 package com.example.picaplace;
 
 import java.net.URL;
+import java.util.ArrayList;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
 import android.widget.GridLayout;
@@ -33,12 +37,17 @@ public class Locate extends Activity implements LocationListener {
 	private int start;
 	private int end;
 	private String json;
+	public static Context context;
+	public static GridLayout rel;
 
 	// private TextView view;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.instagram);
+		// I dunno what it means but i have to put it here #lmao #Yolo #swag
+		context = this;
+		rel = (GridLayout) findViewById(R.id.grid);
 		manager = (LocationManager) this
 				.getSystemService(Context.LOCATION_SERVICE);
 		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
@@ -55,7 +64,7 @@ public class Locate extends Activity implements LocationListener {
 			@Override
 			public void onClick(View arg0) {
 				getLocation();
-				layoutUpdate(true);
+				layoutUpdate();
 			}
 		});
 		Button next = (Button) findViewById(R.id.nextButton);
@@ -67,7 +76,7 @@ public class Locate extends Activity implements LocationListener {
 			@Override
 			public void onClick(View arg0) {
 				getLocation();
-				layoutUpdate(false);
+				layoutUpdate();
 			}
 		});
 		// Log.d("PicAGrid", "Listener");
@@ -77,67 +86,98 @@ public class Locate extends Activity implements LocationListener {
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
-		layoutUpdate(true);
+		layoutUpdate();
 		Log.i("PicAMain", "Program ended");
 
 	}
 
-	public void layoutUpdate(boolean ref) {
+	public void layoutUpdate() {
+		// while (location == null)
 		getLocation();
+		new MyAsyncTask().execute();
+	}
 
-		if (location != null) {
-			json = InstagramGet.getJson(location.getLatitude(),
-					location.getLongitude()); // Add lat + long here
-		} else {
-			Log.d("PicABug", "Loc Is Null");
-			// json = InstagramGet.getJson();
+	private class MyAsyncTask extends AsyncTask<String, Void, ArrayList<View>>
+			implements OnClickListener {
+		protected ArrayList<View> doInBackground(String... arg0) {
+			Log.d("PicAMain", "starting thread");
+			if (location != null) {
+				Log.d("PicAMain", "getting JSon");
+				json = InstagramGet.getJson(location.getLatitude(),
+						location.getLongitude()); // Add lat + long here
+				Log.d("PicAMain", "got JSon");
+			} else {
+				Log.d("PicAMain", "Location Is Null");
+				// json = InstagramGet.getJson();
+				return null;
+			}
+			// Load image by url
+			GridLayout rel = Locate.rel;
+			ArrayList<View> views = new ArrayList<View>();
+			Log.d("PicAMain", "starting to add pictures from JSon");
+			if (json != null) {
+				try {
+					Log.d("PicAMain", "getting the images");
+					String[] pics = InstagramGet.getImageUrl(json);
+					Log.d("PicAMain", "got the images");
+					if (start >= pics.length) {
+						start = 0;
+						end = 4;
+					} else {
+						end += 4;
+					}
+					for (; start < pics.length && start < end; start++) {
+						Log.d("PicAGrid", "Loop " + start);
+						ImageView mciv = new ImageView(Locate.context);
+						// Log.d("PicAGrid", "new Imageview");
+						mciv.setId(start + 10);
+						// Log.d("PicAGrid", "set id");
+						LayoutParams p = new LayoutParams(
+								LayoutParams.WRAP_CONTENT,
+								LayoutParams.WRAP_CONTENT);
+						// Log.d("PicAGrid", "Loading params");
+						mciv.setLayoutParams(p);
+						// Log.d("PicAGrid", "Set Params");
+						URL thumb_u = new URL(pics[start]);
+						// Log.d("PicAGrid", "New URL");
+						Drawable thumb_d = Drawable.createFromStream(
+								thumb_u.openStream(), "src");
+						// Log.d("PicAGrid", "Drawable Thumb");
+						mciv.setImageDrawable(thumb_d);
+						views.add(mciv);
+						Log.d("PicAGrid", "Setting drawable");
+						// rel.addView(mciv, 230 / 2 * 3, 400);
+						// onPostExecute(mciv);
+						// Log.d("PicAGrid", "Adding to view");
+					}
+					// int diff = end - start - 1;
+					// for (; diff > 0; diff--) {
+					// rel.addView(new View(this));
+					// }
+					// Log.d("PicAGrid", "Adding view");
+				} catch (Exception e) {
+					e.printStackTrace();
+					Log.e("PicAGrid", "Images crashed " + e.toString());
+				}
+
+			}
+			onPostExecute(views);
+			return views;
 		}
-		// Load image by url
-		GridLayout rel = (GridLayout) findViewById(R.id.grid);
-		rel.removeAllViews();
 
-		if (json != null) {
-			try {
-				String[] pics = InstagramGet.getImageUrl(json);
-				Log.d("PicAGrid", "Pics ");
-				if (start >= pics.length || ref) {
-					start = 0;
-					end = 4;
-				} else {
-					end += 4;
+		protected void onPostExecute(View... result) {
+			for (View v : result) {
+				if (v != null) {
+					(Locate.rel).addView(v, 230 / 2 * 3, 400);
 				}
-				for (; start < pics.length && start < end; start++) {
-					Log.d("PicAGrid", "Loop " + start);
-					ImageView mciv = new ImageView(this);
-					// Log.d("PicAGrid", "new Imageview");
-					mciv.setId(start + 10);
-					// Log.d("PicAGrid", "set id");
-					LayoutParams p = new LayoutParams(
-							LayoutParams.WRAP_CONTENT,
-							LayoutParams.WRAP_CONTENT);
-					// Log.d("PicAGrid", "Loading params");
-					mciv.setLayoutParams(p);
-					// Log.d("PicAGrid", "Set Params");
-					URL thumb_u = new URL(pics[start]);
-					// Log.d("PicAGrid", "New URL");
-					Drawable thumb_d = Drawable.createFromStream(
-							thumb_u.openStream(), "src");
-					// Log.d("PicAGrid", "Drawable Thumb");
-					mciv.setImageDrawable(thumb_d);
-					// Log.d("PicAGrid", "Setting drawable");
-					rel.addView(mciv, 230 / 2 * 3, 400);
-					// Log.d("PicAGrid", "Adding to view");
-				}
-				// int diff = end - start - 1;
-				// for (; diff > 0; diff--) {
-				// rel.addView(new View(this));
-				// }
-				// Log.d("PicAGrid", "Adding view");
-			} catch (Exception e) {
-				e.printStackTrace();
-				Log.e("PicAGrid", "Images crashed " + e.toString());
 			}
 		}
+
+		@Override
+		public void onClick(View arg0) {
+
+		}
+
 	}
 
 	// starts the process getting the location of the users
@@ -181,7 +221,7 @@ public class Locate extends Activity implements LocationListener {
 				Log.e("PicALoc", "Location or network are off");
 			} else {
 				if (isNetworkEnabled) {
-					Log.d("PicABug", "Network Enabled");
+					// Log.d("PicAMain", "Network Enabled");
 					manager.requestLocationUpdates(
 							LocationManager.NETWORK_PROVIDER,
 							MIN_TIME_BW_UPDATES,
@@ -189,7 +229,7 @@ public class Locate extends Activity implements LocationListener {
 				}
 				// if GPS Enabled get lat/long using GPS Services
 				if (isGPSEnabled) {
-					Log.d("PicABug", "GPS Enabled");
+					// Log.d("PicAMain", "GPS Enabled");
 					manager.requestLocationUpdates(
 							LocationManager.GPS_PROVIDER, MIN_TIME_BW_UPDATES,
 							MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
@@ -282,12 +322,20 @@ public class Locate extends Activity implements LocationListener {
 
 	@Override
 	public void onLocationChanged(Location loc) {
-		if (isBetterLocation(loc, location))
+		if (loc == null) {
+			return;
+		}
+		if (isBetterLocation(loc, location)) {
 			location = loc;
-		Log.d("PicABug",
-				"changed location " + loc.getLatitude() + ", "
-						+ loc.getLongitude());
+			Log.d("PicAMain", "changed location " + loc.getLatitude() + ", "
+					+ loc.getLongitude());
+			Log.d("PicAMain", "location lat long" + location.getLatitude()
+					+ ", " + location.getLongitude());
 
+		} else {
+			Log.d("PicAMain", "Not better location " + loc.getLatitude() + ", "
+					+ loc.getLongitude());
+		}
 		// if (location != null) {
 		// view.setText(location.getLongitude() + ", "
 		// + location.getLatitude());
